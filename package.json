@@ -1,0 +1,11 @@
+{
+  "name": "sax-parser",
+  "version": "1.0.0",
+  "description": "\"a node js app that downloads html file and parses it into a JSON document\"",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Dag G",
+  "license": "ISC"
+}
