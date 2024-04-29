@@ -18,15 +18,23 @@ const getHTML = getDocument().then(response => {
         let lastPart = null;
         let lastSubpart = null;
         let lastSection = null;
-        let lastDiv = null;
+        let lastTitleDiv = null;
+        let lastParentDiv = null;
+        let lastClass = null;
 
         parser.onopentag = (node) => {
             elementName = node.name;
 
-
+            if (node.name === 'DIV') {
+                if (node.attributes.CLASS === 'authority' || node.attributes.CLASS === 'source') {
+                    console.log("heeeeeeeeere", node.attributes.CLASS)
+                    lastClass = node.attributes.CLASS;
+                }
+            }
             if (node.name === 'DIV' && node.attributes.ID !== undefined) {
                 lastID = node.attributes.ID;
-                lastDiv = node.attributes.CLASS;
+                lastTitleDiv = node.attributes.CLASS;
+                lastParentDiv = node.attributes.CLASS;
                 if (node.attributes.CLASS === 'title') lastTitle = lastID;
                 if (node.attributes.CLASS === 'subtitle') lastSubtitle = lastID;
                 if (node.attributes.CLASS === 'part') lastPart = lastID;
@@ -43,27 +51,45 @@ const getHTML = getDocument().then(response => {
 
             const trimmedText = text.trim();
             if (trimmedText !== "") {
-                if (elementName === 'H1' || elementName === 'H2' || elementName === 'H3' || elementName === 'H4' || elementName === 'H5' || elementName === 'H6' || lastDiv !== null) {
+                if (elementName === 'H1' || elementName === 'H2' || elementName === 'H3' || elementName === 'H4' || elementName === 'H5' || elementName === 'H6' || lastTitleDiv !== null) {
                     let obj = { title: text };
-                    if (lastDiv === 'title') {
+                    if (lastTitleDiv === 'title') {
                         if (parsedHTML[lastTitle] === undefined) parsedHTML[lastTitle] = obj;
                         else parsedHTML[lastTitle].title += text;
                     }
-                    else if (lastDiv === 'subtitle') {
+                    else if (lastTitleDiv === 'subtitle') {
                         if (parsedHTML[lastTitle][lastSubtitle] === undefined) parsedHTML[lastTitle][lastSubtitle] = obj;
                         else parsedHTML[lastTitle][lastSubtitle].title += text;
                     }
-                    else if (lastDiv === 'part') {
+                    else if (lastTitleDiv === 'part') {
                         if (parsedHTML[lastTitle][lastSubtitle][lastPart] === undefined) parsedHTML[lastTitle][lastSubtitle][lastPart] = obj;
                         else parsedHTML[lastTitle][lastSubtitle][lastPart].title += text;
                     }
-                    else if (lastDiv === 'subpart') {
+                    else if (lastTitleDiv === 'subpart') {
                         if (parsedHTML[lastTitle][lastSubtitle][lastPart][lastSubpart] === undefined) parsedHTML[lastTitle][lastSubtitle][lastPart][lastSubpart] = obj;
                         else parsedHTML[lastTitle][lastSubtitle][lastPart][lastSubpart].title += text;
                     }
-                    else if (lastDiv === 'section') {
+                    else if (lastTitleDiv === 'section') {
                         if (parsedHTML[lastTitle][lastSubtitle][lastPart][lastSubpart][lastSection] === undefined) parsedHTML[lastTitle][lastSubtitle][lastPart][lastSubpart][lastSection] = obj;
                         else parsedHTML[lastTitle][lastSubtitle][lastPart][lastSubpart][lastSection].title += text;
+                    }
+                }
+                if (lastClass !== null) {
+                    if (lastParentDiv === 'title') {
+
+                        parsedHTML[lastTitle][lastClass] = { title: text }
+                    }
+                    else if (lastParentDiv === 'subtitle') {
+                        parsedHTML[lastTitle][lastSubtitle][lastClass] = { title: text }
+                    }
+                    else if (lastParentDiv === 'part') {
+                        parsedHTML[lastTitle][lastSubtitle][lastPart][lastClass] = { title: text }
+                    }
+                    else if (lastParentDiv === 'subpart') {
+                        parsedHTML[lastTitle][lastSubtitle][lastPart][lastSubpart][lastClass] = { title: text }
+                    }
+                    else if (lastParentDiv === 'section') {
+                        parsedHTML[lastTitle][lastSubtitle][lastPart][lastSubpart][lastSection][lastClass] = { title: text }
                     }
                 }
             }
@@ -71,7 +97,8 @@ const getHTML = getDocument().then(response => {
 
         parser.onclosetag = (node) => {
             if (node === 'H1' || node === 'H2' || node === 'H3' || node === 'H4' || node === 'H5' || node === 'H6') {
-                lastDiv = null;
+                lastTitleDiv = null;
+                lastClass = null;
             }
         }
         parser.onend = () => {
