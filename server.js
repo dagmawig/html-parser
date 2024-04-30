@@ -23,6 +23,9 @@ const getHTML = getDocument().then(response => {
         let inlineParStr = [];
         let hString = [];
         let inlineHeaderStr = [];
+        let indent_1Str = [];
+        let plainParaStr = [];
+
         parser.onopentag = (node) => {
             elementName = node.name;
             nodeStack.push(node);
@@ -31,7 +34,7 @@ const getHTML = getDocument().then(response => {
                 if (node.attributes.CLASS === 'inline-header') inlineHeaderStr = [];
                 else hString = [];
             }
-            if (node.name === 'DIV' && node.attributes.ID !== undefined) {
+            if (elementName === 'DIV' && node.attributes.ID !== undefined) {
                 lastID = node.attributes.ID;
                 lastParentDiv = node.attributes.CLASS;
                 if (node.attributes.CLASS === 'title') lastTitle = lastID;
@@ -39,6 +42,10 @@ const getHTML = getDocument().then(response => {
                 if (node.attributes.CLASS === 'part') lastPart = lastID;
                 if (node.attributes.CLASS === 'subpart') lastSubpart = lastID;
                 if (node.attributes.CLASS === 'section') lastSection = lastID;
+            }
+            if (elementName === 'P') {
+               if(node.attributes.CLASS==='indent-1') indent_1Str = [];
+               else plainParaStr = [];
             }
         }
 
@@ -58,7 +65,7 @@ const getHTML = getDocument().then(response => {
             if (trimmedText !== "") {
                 if (isHElement || isParentHElement) {
 
-                   
+
                     let textObj = { text }
                     if (currentNode.name === 'A') {
                         textObj.hyperlink = currentNode.attributes.HREF;
@@ -78,12 +85,29 @@ const getHTML = getDocument().then(response => {
                     inlineParStr.push(textObj);
 
                 }
+
+                if (currentNodeClass === 'indent-1' || parentNodeClass === 'indent-1') {
+                    let textObj = { text };
+                    if (currentNode?.name === 'A') {
+                        textObj.hyperlink = currentNode.attributes.HREF;
+                    }
+                    indent_1Str.push(textObj);
+                }
+                else if (currentNode.name==='P' || parentNode.name==='P') {
+                    let textObj = { text };
+                    if (currentNode?.name === 'A') {
+                        textObj.hyperlink = currentNode.attributes.HREF;
+                    }
+                    plainParaStr.push(textObj);
+                }
             }
         }
 
         parser.onclosetag = (node) => {
-            let currentNodeClass = nodeStack[nodeStack.length - 1]?.attributes.CLASS;
-            let parentNodeClass = nodeStack[nodeStack.length - 2]?.attributes.CLASS;
+            let currentNode = nodeStack[nodeStack.length - 1];
+            let parentNode = nodeStack[nodeStack.length - 2];
+            let currentNodeClass = currentNode?.attributes.CLASS;
+            let parentNodeClass = parentNode?.attributes.CLASS;
 
             if (node === 'H1' || node === 'H2' || node === 'H3' || node === 'H4' || node === 'H5' || node === 'H6') {
 
@@ -141,6 +165,19 @@ const getHTML = getDocument().then(response => {
                 }
                 else if (lastParentDiv === 'section') {
                     parsedHTML[lastTitle][lastSubtitle][lastPart][lastSubpart][lastSection][parentNodeClass].body = inlineParStr;
+                }
+            }
+            
+            if (currentNodeClass==='indent-1') {
+                let parentID = parentNode?.attributes.ID
+                if(parentID) {
+                    parsedHTML[lastTitle][lastSubtitle][lastPart][lastSubpart][lastSection][parentID] = indent_1Str;
+                }
+            }
+            else if (currentNode.name==='P') {
+                let parentID = parentNode?.attributes.ID;
+                if(parentID) {
+                    parsedHTML[lastTitle][lastSubtitle][lastPart][lastSubpart][lastSection]['sectionOpener'] = plainParaStr;
                 }
             }
 
