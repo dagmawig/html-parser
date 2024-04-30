@@ -3,6 +3,7 @@ import * as dotenv from "dotenv";
 
 dotenv.config()
 
+// creats the logic that fetches the html document
 async function getDocument(webLink) {
 
     try {
@@ -11,10 +12,11 @@ async function getDocument(webLink) {
             return resp.data;
         });
 
-        return response;
+        return {success: true, data:response};
     }
     catch (error) {
-        console.log(error)
+        console.log(error);
+        return {success: false, error};
     }
 
 }

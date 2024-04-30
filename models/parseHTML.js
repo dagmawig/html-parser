@@ -2,11 +2,12 @@ import getDocument from "./documentRoute.js";
 import sax from "sax";
 import htmlString from "../example.js";
 
+// setting the parser to remove unnecessary empty spaces
 const parser = sax.parser(false, {
     normalize: true
 });
 
-
+// create the logic that parses the html doc into a JSON format
 export default function JSON_Format(webLink) {
 
 
@@ -14,6 +15,8 @@ export default function JSON_Format(webLink) {
 
        // return response;
         try {
+
+            // declare pointer variables used in html parsing
             let parsedHTML = {};
             let nodeStack = [];
             let elementName = null;
@@ -30,9 +33,12 @@ export default function JSON_Format(webLink) {
             let indent_1Str = [];
             let plainParaStr = [];
 
+            // define actions to take at opening tag
             parser.onopentag = (node) => {
+
                 elementName = node.name;
                 nodeStack.push(node);
+
                 if (node.attributes.CLASS === 'inline-paragraph') inlineParStr = [];
                 if (elementName === 'H1' || elementName === 'H2' || elementName === 'H3' || elementName === 'H4' || elementName === 'H5' || elementName === 'H6') {
                     if (node.attributes.CLASS === 'inline-header') inlineHeaderStr = [];
@@ -56,7 +62,8 @@ export default function JSON_Format(webLink) {
             // parser.onattribute = (attr) => {
             //     console.log(attr);
             // }
-
+            
+            // define actions to take when parsing element content 
             parser.ontext = (text) => {
                 let parentNode = nodeStack[nodeStack.length - 2];
                 let currentNode = nodeStack[nodeStack.length - 1]
@@ -107,6 +114,7 @@ export default function JSON_Format(webLink) {
                 }
             }
 
+            // define actions to take at close tag
             parser.onclosetag = (node) => {
                 let currentNode = nodeStack[nodeStack.length - 1];
                 let parentNode = nodeStack[nodeStack.length - 2];
@@ -202,5 +210,4 @@ export default function JSON_Format(webLink) {
 
     });
 
-    return getHTML;
 }

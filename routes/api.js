@@ -3,6 +3,7 @@ import * as dotenv from "dotenv";
 
 dotenv.config()
 
+// Creating a custom instance of Axios with default settings
 const api = axios.create({
     baseURL: process.env.BASE_URL,
     url: process.env.URL,
