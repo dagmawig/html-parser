@@ -8,10 +8,10 @@ const parser = sax.parser(false, {
 });
 
 // create the logic that parses the html doc into a JSON format
-export default function JSON_Format(webLink) {
+export default function JSON_Format(url) {
 
 
-    return getDocument(webLink).then(response => {
+    return getDocument(url).then(response => {
 
        // return response;
         try {
